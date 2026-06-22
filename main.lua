@@ -1,3 +1,5 @@
+--- @since 26.5.6
+
 --- tar.yazi — archive selected files into <cwd>-<date>.tar.<ext>
 --- Usage: plugin tar          (defaults to gz)
 ---        plugin tar -- gz    (gzip)
