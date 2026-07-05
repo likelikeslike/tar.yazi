@@ -46,16 +46,22 @@ return {
     local dirname = cwd:match("([^/]+)/?$") or "archive"
     local archive = string.format("%s-%s.%s", dirname, os.date("%Y%m%d"), ext)
 
-    -- gtar strips leading `/` from absolute paths before applying --transform,
+    -- gtar/tar strips leading `/` from absolute paths before applying --transform,
     -- so anchor on the cwd WITHOUT its leading slash to match the post-strip form.
     local args = { "--transform", string.format("s|^%s/||", escape_sed(cwd:sub(2))), flag, "-cvf", archive }
     for _, p in ipairs(selected) do
       args[#args + 1] = p
     end
 
-    local output, err = Command("gtar"):cwd(cwd):arg(args):stdout(Command.PIPED):stderr(Command.PIPED):output()
+    local tar_cmd = ya.target_os() == "macos" and "gtar" or "tar"
+    local output, err = Command(tar_cmd):cwd(cwd):arg(args):stdout(Command.PIPED):stderr(Command.PIPED):output()
     if not output then
-      ya.notify({ title = "tar", content = "Failed to run gtar: " .. tostring(err), level = "error", timeout = 5 })
+      ya.notify({
+        title = "tar",
+        content = "Failed to run " .. tar_cmd .. ": " .. tostring(err),
+        level = "error",
+        timeout = 5,
+      })
       return
     end
     if output.status.code ~= 0 then
